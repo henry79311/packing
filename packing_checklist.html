@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>沖繩出國攜帶清單</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --ocean: #1a6b8a;
+    --ocean-dark: #0d4d6b;
+    --green: #3a8a5c;
+    --text: #1e2a35;
+    --muted: #8a9ab0;
+    --border: #e2eaf2;
+    --checked-bg: #f0f7f4;
+    --checked-text: #9ab8a8;
+    --shadow: 0 2px 8px rgba(26,107,138,0.08);
+    --new: #e8a838;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+
+  .hero { background: linear-gradient(135deg, var(--ocean-dark) 0%, var(--ocean) 100%); padding: 36px 20px 48px; text-align: center; position: relative; overflow: hidden; }
+  .hero::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 40px; background: var(--bg); clip-path: ellipse(55% 100% at 50% 100%); }
+  .hero-emoji { font-size: 2.4rem; display: block; margin-bottom: 8px; }
+  .hero h1 { font-size: 1.6rem; font-weight: 700; color: #fff; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .hero-sub { font-size: 0.82rem; color: rgba(255,255,255,0.65); letter-spacing: 0.06em; }
+
+  .progress-wrap { max-width: 680px; margin: -10px auto 0; padding: 0 16px; position: relative; z-index: 1; }
+  .progress-card { background: var(--card); border-radius: 16px; padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px; }
+  .progress-text { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+  .progress-text strong { font-size: 1.1rem; color: var(--ocean); }
+  .progress-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--ocean), var(--green)); border-radius: 999px; transition: width 0.4s ease; }
+  .reset-btn { font-size: 0.72rem; padding: 5px 12px; background: transparent; border: 1.5px solid var(--border); border-radius: 999px; color: var(--muted); cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: 'Noto Sans TC', sans-serif; }
+  .reset-btn:hover { border-color: #e05a4e; color: #e05a4e; }
+
+  .tabs { max-width: 680px; margin: 20px auto 0; padding: 0 16px; display: flex; gap: 8px; }
+  .tab { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); font-family: 'Noto Sans TC', sans-serif; font-size: 0.88rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .tab.active { border-color: var(--ocean); color: var(--ocean); background: rgba(26,107,138,0.06); }
+
+  .content { max-width: 680px; margin: 16px auto 0; padding: 0 16px; }
+  .person-section { display: none; }
+  .person-section.active { display: block; }
+
+  .category { background: var(--card); border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .cat-header { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
+  .cat-emoji { font-size: 1.2rem; }
+  .cat-title { font-size: 0.95rem; font-weight: 700; flex: 1; }
+  .cat-count { font-size: 0.72rem; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 999px; }
+  .cat-toggle { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s; }
+  .cat-toggle.open { transform: rotate(180deg); }
+  .cat-items { padding: 6px 8px 10px; }
+
+  .item { display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-radius: 10px; cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent; }
+  .item:hover { background: var(--bg); }
+  .item.checked { background: var(--checked-bg); }
+
+  .checkbox { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 0.7rem; color: transparent; }
+  .item.checked .checkbox { background: var(--green); border-color: var(--green); color: white; }
+
+  .item-label { font-size: 0.88rem; color: var(--text); transition: color 0.2s; line-height: 1.4; flex: 1; }
+  .item.checked .item-label { color: var(--checked-text); text-decoration: line-through; text-decoration-color: var(--checked-text); }
+
+  .new-badge { font-size: 0.62rem; background: var(--new); color: white; padding: 1px 6px; border-radius: 999px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .item.checked .new-badge { opacity: 0.4; }
+
+  /* category accent colors */
+  .cat-doc .cat-header { border-left: 4px solid #e76f51; }
+  .cat-food .cat-header { border-left: 4px solid #e8a838; }
+  .cat-sleep .cat-header { border-left: 4px solid #7b68ee; }
+  .cat-diaper .cat-header { border-left: 4px solid #e05a4e; }
+  .cat-wear .cat-header { border-left: 4px solid #3a8a5c; }
+  .cat-out .cat-header { border-left: 4px solid #1a6b8a; }
+  .cat-bath .cat-header { border-left: 4px solid #2a9d8f; }
+  .cat-swim .cat-header { border-left: 4px solid #4cc9f0; }
+  .cat-med .cat-header { border-left: 4px solid #e63946; }
+
+  .cat-carry .cat-header { border-left: 4px solid #264653; }
+  .cat-body .cat-header { border-left: 4px solid #457b9d; }
+  .cat-wash .cat-header { border-left: 4px solid #2a9d8f; }
+  .cat-face .cat-header { border-left: 4px solid #e9c46a; }
+  .cat-eye .cat-header { border-left: 4px solid #4cc9f0; }
+  .cat-mouth .cat-header { border-left: 4px solid #f4a261; }
+  .cat-meds .cat-header { border-left: 4px solid #e63946; }
+  .cat-misc .cat-header { border-left: 4px solid #8338ec; }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 1.3rem; }
+    .item-label { font-size: 0.83rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="hero-emoji">✈️</span>
+  <h1>沖繩出國攜帶清單</h1>
+  <p class="hero-sub">8月28日 – 9月1日 · 五天四夜 · 帶寶寶同行</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-card">
+    <div class="progress-text"><strong id="checked-count">0</strong> / <span id="total-count">0</span> 已打包</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <button class="reset-btn" onclick="resetAll()">重置</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('daughter', this)">👶 女兒</button>
+  <button class="tab" onclick="switchTab('me', this)">🧳 我</button>
+</div>
+
+<div class="content">
+
+<!-- ══════════════ 女兒 ══════════════ -->
+<div class="person-section active" id="daughter">
+
+  <!-- 證件 & 重要文件 -->
+  <div class="category cat-doc">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">📋</span><span class="cat-title">證件 & 重要文件</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">護照</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">健保卡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">寶寶手冊</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">外幣（日幣）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">信用卡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">駕照（租車用）</span></div>
+    </div>
+  </div>
+
+  <!-- 吃 -->
+  <div class="category cat-food">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🍼</span><span class="cat-title">吃</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶粉</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶粉罐</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶瓶</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶瓶清潔劑</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶瓶刷</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">折疊盆</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">保溫瓶（裝熱水）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">熱水壺</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">悶燒罐</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">冰霸杯</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">泰山純水</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">益生菌</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">副食品（寶寶粥）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">餐具（碗、湯匙、剪刀）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">圍兜</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">米餅</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">口水巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">備用零食（磨牙餅乾等）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">削皮刀</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">水果刀</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">小砧板</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">拋棄式圍兜</span></div>
+    </div>
+  </div>
+
+  <!-- 睡 -->
+  <div class="category cat-sleep">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">😴</span><span class="cat-title">睡</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">床墊</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">毯子 / 被子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶嘴 ×2</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">奶嘴鏈</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">溫度計</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">噪音機（白噪音）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 拉 -->
+  <div class="category cat-diaper">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🚼</span><span class="cat-title">拉（尿布相關）</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">日用尿布</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">過夜型尿布</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">尿布墊</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">濕紙巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">乾濕兩用巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">屁屁噴</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">屁屁巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防漏尿布袋（裝換下的尿布）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 穿 -->
+  <div class="category cat-wear">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">👗</span><span class="cat-title">穿</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">衣服（多備1-2套備用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">襪子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">帽子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">墨鏡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">涼鞋 / 學步鞋</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 游泳 -->
+  <div class="category cat-swim">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🏊</span><span class="cat-title">游泳 & 戲水</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">泳衣</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">游泳尿布</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">臂圈</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">游泳圈</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防曬乳（嬰兒用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防曬衣 / 防曬帽</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">浴巾（游泳後用）</span></div>
+    </div>
+  </div>
+
+  <!-- 洗澡 & 保養 -->
+  <div class="category cat-bath">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🛁</span><span class="cat-title">洗澡 & 保養</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">沐浴乳</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">洗澡巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">浴巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">手洗精</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">牙刷（嬰兒用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">乳液（臉 & 身體）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">擦臉藥</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">眼藥膏</span></div>
+    </div>
+  </div>
+
+  <!-- 外出 & 裝備 -->
+  <div class="category cat-out">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🚗</span><span class="cat-title">外出 & 裝備</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">背巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">側背巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">雨罩（嬰兒車用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">風扇（夾式）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">充電寶</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">充電寶（白）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">玩具（外出用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">消毒（黃金盾）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">紫外線消毒器</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防蚊液（嬰兒用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">口罩</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">水壺</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">3coins 大提袋</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">兒童耳塞（煙火用）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">隔音耳罩（嬰兒用）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">車用兒童座椅確認（租車）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 藥品 & 急救 -->
+  <div class="category cat-med">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">💊</span><span class="cat-title">藥品 & 急救</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">常備藥</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">退燒藥（嬰兒用）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">退燒貼片</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">腸胃藥（嬰兒用）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">過敏藥（嬰兒用）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">止癢藥膏（蚊蟲叮咬）</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">OK繃</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+</div><!-- /daughter -->
+
+<!-- ══════════════ 我 ══════════════ -->
+<div class="person-section" id="me">
+
+  <!-- 隨身行李 -->
+  <div class="category cat-carry">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🎒</span><span class="cat-title">隨身行李</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">護照</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">台胞證 / 簽證</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">錢包（錢、信用卡、名片）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">日幣現金</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">手機 + 豆腐頭 + 充電線</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">行動充電</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">網卡（日本）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">耳機</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">筆電</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">iPad</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">筆記本 + 筆</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">口罩 + 口罩套</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">消毒液</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">國外手機</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">錄音筆</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">書</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">切藥器</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">Switch</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">國際電源轉接頭（日本2孔）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 衣物（託運） -->
+  <div class="category cat-body">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">👕</span><span class="cat-title">衣物（託運）</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">外套</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">衣服</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">褲子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">內褲</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">襪子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">拖鞋</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">鞋子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">帽子</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">衣架</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">泳衣</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">曬衣夾 / 曬衣繩</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">衣物收納袋</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 盥洗 -->
+  <div class="category cat-wash">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🚿</span><span class="cat-title">盥洗</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">洗髮精</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">肥皂 / 沐浴乳</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">牙刷 ×2</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">電動牙刷</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">牙膏 ×2</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">牙線</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">刮鬍刀</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">分裝瓶（盥洗用品）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 臉部保養 -->
+  <div class="category cat-face">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🧴</span><span class="cat-title">臉部保養</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">洗面乳</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">化妝水</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">乳液</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">B5</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">卸妝棉</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防曬</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">凡士林</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">小護士</span></div>
+    </div>
+  </div>
+
+  <!-- 眼鏡 / 隱形 -->
+  <div class="category cat-eye">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">👓</span><span class="cat-title">眼鏡 & 隱形</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">眼鏡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">備用眼鏡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">隱形眼鏡</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">保養液</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">食鹽水</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">墨鏡</span></div>
+    </div>
+  </div>
+
+  <!-- 藥品 -->
+  <div class="category cat-meds">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">💊</span><span class="cat-title">藥品</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">禿頭藥</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">百草丸</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">感冒藥</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">消炎止痛藥</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">過敏藥膏</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">維他命</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">葉黃素</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">發泡錠</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">止瀉藥</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">腸胃藥</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+  <!-- 自駕物品 -->
+  <div class="category cat-meds" style="--accent: #2a9d8f;">
+    <div class="cat-header" onclick="toggleCat(this)" style="border-left: 4px solid #2a9d8f;">
+      <span class="cat-emoji">🚗</span><span class="cat-title">自駕物品</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">車用手機支架</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">車充</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">車用充電線</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">遮陽簾（寶寶用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">駕照（台灣 + 日文譯本）</span></div>
+    </div>
+  </div>
+
+  <!-- 其他雜物 -->
+  <div class="category cat-misc">
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span class="cat-emoji">🎒</span><span class="cat-title">其他雜物</span>
+      <span class="cat-count" data-cat></span><span class="cat-toggle open">▼</span>
+    </div>
+    <div class="cat-items">
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">指甲刀</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">雨傘</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">水壺</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">噪音機</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">香水</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">餅乾 / 零食</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">濕紙巾</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">涼糖</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">泳衣（備用）</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防曬</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">防蚊液</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">環保購物袋</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">行李秤</span><span class="new-badge">建議</span></div>
+      <div class="item" onclick="toggle(this)"><div class="checkbox">✓</div><span class="item-label">密封夾鏈袋（分裝 / 防漏）</span><span class="new-badge">建議</span></div>
+    </div>
+  </div>
+
+</div><!-- /me -->
+</div><!-- /content -->
+
+<script>
+  function toggle(el) {
+    el.classList.toggle('checked');
+    updateProgress();
+    save();
+  }
+
+  function toggleCat(header) {
+    const items = header.nextElementSibling;
+    const arrow = header.querySelector('.cat-toggle');
+    const isOpen = items.style.display !== 'none';
+    items.style.display = isOpen ? 'none' : 'block';
+    arrow.classList.toggle('open', !isOpen);
+  }
+
+  function switchTab(id, btn) {
+    document.querySelectorAll('.person-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.item');
+    const checked = document.querySelectorAll('.item.checked');
+    document.getElementById('checked-count').textContent = checked.length;
+    document.getElementById('total-count').textContent = all.length;
+    const pct = all.length ? (checked.length / all.length * 100) : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.querySelectorAll('.category').forEach(cat => {
+      const total = cat.querySelectorAll('.item').length;
+      const done = cat.querySelectorAll('.item.checked').length;
+      const el = cat.querySelector('.cat-count');
+      if (el) el.textContent = done + ' / ' + total;
+    });
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.item.checked').forEach(el => el.classList.remove('checked'));
+    updateProgress();
+    try { localStorage.removeItem('packing_v2'); } catch(e) {}
+  }
+
+  function save() {
+    const items = document.querySelectorAll('.item');
+    const state = Array.from(items).map(el => el.classList.contains('checked') ? 1 : 0);
+    try { localStorage.setItem('packing_v2', JSON.stringify(state)); } catch(e) {}
+  }
+
+  function load() {
+    try {
+      const saved = localStorage.getItem('packing_v2');
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      document.querySelectorAll('.item').forEach((el, i) => {
+        if (state[i]) el.classList.add('checked');
+      });
+    } catch(e) {}
+  }
+
+  load();
+  updateProgress();
+</script>
+</body>
+</html>
